@@ -4,16 +4,53 @@ function extractEmails(text) {
 }
 
 function scrapeEmails() {
-  const jobDescription = document.querySelector('.description__text');
+  // Try multiple possible selectors for job descriptions
+  const possibleSelectors = [
+    '.description__text',
+    '.job-details',
+    '.jobs-description',
+    '.jobs-description-content',
+    '[data-job-description]'
+  ];
+
+  let jobDescription = null;
+  for (const selector of possibleSelectors) {
+    const element = document.querySelector(selector);
+    if (element) {
+      jobDescription = element;
+      break;
+    }
+  }
+
   if (jobDescription) {
+    console.log('Found job description element');
     const emails = extractEmails(jobDescription.innerText);
-    emails.forEach(email => {
-      chrome.runtime.sendMessage({ type: "NEW_EMAIL", email });
-    });
+    if (emails.length > 0) {
+      console.log('Found emails:', emails);
+      emails.forEach(email => {
+        chrome.runtime.sendMessage({ type: "NEW_EMAIL", email });
+      });
+    } else {
+      console.log('No emails found in job description');
+    }
+  } else {
+    console.log('Job description element not found');
   }
 }
 
-// Wait for the job description to load
-window.addEventListener('load', () => {
-  setTimeout(scrapeEmails, 3000); // Adjust timeout as needed
+// Initial attempt
+setTimeout(scrapeEmails, 1000);
+
+// Keep checking periodically in case the content loads dynamically
+const observer = new MutationObserver((mutations) => {
+  scrapeEmails();
 });
+
+// Start observing the document with the configured parameters
+observer.observe(document.body, {
+  childList: true,
+  subtree: true
+});
+
+// Cleanup after 30 seconds to prevent unnecessary observing
+setTimeout(() => observer.disconnect(), 30000);

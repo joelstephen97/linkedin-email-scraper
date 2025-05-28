@@ -3,7 +3,7 @@
   "name": "LinkedIn Email Scraper",
   "version": "1.0",
   "description": "Automatically scrape emails from LinkedIn job posts.",
-  "permissions": ["storage", "scripting", "tabs"],
+  "permissions": ["storage", "scripting", "tabs", "notifications"],
   "host_permissions": ["https://www.linkedin.com/jobs/*"],
   "background": {
     "service_worker": "background.js"
