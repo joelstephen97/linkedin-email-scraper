@@ -1,17 +1,24 @@
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === "NEW_EMAIL") {
+  if (request.type === "NEW_EMAILS" && request.emails.length > 0) {
     chrome.storage.local.get({ emails: [] }, (data) => {
-      const emails = data.emails;      if (!emails.find(e => e.email === request.email)) {
-        emails.push({
-          email: request.email,
-          domain: request.domain,
-          timestamp: new Date().toISOString()
-        });
-        chrome.storage.local.set({ emails });        chrome.notifications.create({
+      const existingEmails = data.emails;
+      const newEmails = request.emails.filter(newEmail => 
+        !existingEmails.some(existing => existing.email === newEmail.email)
+      );
+
+      if (newEmails.length > 0) {
+        // Add all new emails to storage
+        const updatedEmails = [...existingEmails, ...newEmails];
+        chrome.storage.local.set({ emails: updatedEmails });
+
+        // Create notification with count of new emails
+        chrome.notifications.create({
           type: "basic",
           iconUrl: "icons/icon128.png",
-          title: "New Email Found",
-          message: `Email: ${request.email}\nFrom: ${request.domain}`,
+          title: "New Emails Found",
+          message: `Found ${newEmails.length} new email${newEmails.length === 1 ? '' : 's'}!\n${
+            newEmails.map(e => e.email).join('\n')
+          }`,
           priority: 2
         });
       }

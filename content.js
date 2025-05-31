@@ -7,50 +7,96 @@ chrome.storage.local.get({ emails: [] }, (data) => {
 });
 
 function extractEmails(text) {
-  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/g;
-  return text.match(emailRegex) || [];
+  // First, normalize spaces and line breaks
+  const normalizedText = text.replace(/\s+/g, ' ').trim();
+  
+  // More comprehensive email regex that handles multiple emails
+  const emailRegex = /[\w\.-]+@[\w\.-]+\.\w{2,}/g;
+  
+  // Use matchAll to get all matches and convert to array
+  const matches = Array.from(normalizedText.matchAll(emailRegex), m => m[0]);
+  return matches;
 }
 
 function scrapeEmails() {
-  // Get all text content from the page, including hidden elements
-  const pageText = document.body.innerText + Array.from(document.getElementsByTagName('*'))
-    .map(el => el.getAttribute('href') || '')
-    .join(' ');
-    
-  if (pageText) {
-    const emails = extractEmails(pageText);
-    const newEmails = emails.filter(email => !foundEmails.has(email));
-    
-    // Process all new emails in batch
-    newEmails.forEach(email => {
-      foundEmails.add(email);
-      chrome.runtime.sendMessage({ 
-        type: "NEW_EMAIL", 
-        email,
-        domain: window.location.hostname
-      });
-    });
+  // Get all text nodes in the document
+  const walker = document.createTreeWalker(
+    document.body,
+    NodeFilter.SHOW_TEXT,
+    null,
+    false
+  );
 
-    // Log found emails for debugging
-    if (newEmails.length > 0) {
-      console.log(`Found ${newEmails.length} new email(s):`, newEmails);
+  const allEmails = new Set();
+  
+  // Process text nodes
+  let node;
+  while (node = walker.nextNode()) {
+    const emails = extractEmails(node.nodeValue);
+    emails.forEach(email => allEmails.add(email));
+  }
+
+  // Process mailto links separately
+  document.querySelectorAll('a[href^="mailto:"]').forEach(link => {
+    const href = link.getAttribute('href');
+    if (href) {
+      const email = href.replace('mailto:', '').split('?')[0];
+      if (email) allEmails.add(email);
     }
+  });
+
+  // Process all visible elements that might contain emails
+  ['p', 'div', 'span', 'td', 'li', 'pre', 'code'].forEach(tag => {
+    document.querySelectorAll(tag).forEach(el => {
+      const emails = extractEmails(el.textContent);
+      emails.forEach(email => allEmails.add(email));
+    });
+  });
+  
+  // Filter out already found emails
+  const newEmails = Array.from(allEmails).filter(email => {
+    // Additional validation
+    const isValid = email.includes('@') && email.includes('.');
+    const isNew = !foundEmails.has(email);
+    return isValid && isNew;
+  });
+    // Process all new emails in batch
+  if (newEmails.length > 0) {
+    
+    // Add all emails to foundEmails set
+    newEmails.forEach(email => foundEmails.add(email));
+    
+    // Send all emails in one message
+    chrome.runtime.sendMessage({ 
+      type: "NEW_EMAILS", 
+      emails: newEmails.map(email => ({
+        email,
+        domain: window.location.hostname,
+        timestamp: new Date().toISOString()
+      }))
+    });
   }
 }
 
-// Initial attempt
-setTimeout(scrapeEmails, 1000);
+// Run initial scan
+scrapeEmails();
 
-// Keep checking periodically in case the content loads dynamically
-const observer = new MutationObserver(() => {
-  scrapeEmails();
-});
+// Set up periodic scanning with debounce
+let debounceTimer;
+const debouncedScrape = () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(scrapeEmails, 3000);
+};
 
-// Start observing the document with the configured parameters
+// Observe DOM changes
+const observer = new MutationObserver(debouncedScrape);
+
 observer.observe(document.body, {
   childList: true,
-  subtree: true
+  subtree: true,
+  characterData: true,
+  attributes: false
 });
 
-// Cleanup after 30 seconds to prevent unnecessary observing
-setTimeout(() => observer.disconnect(), 30000);
+// Clean up after 3 seconds
+setTimeout(() => observer.disconnect(), 3000);
