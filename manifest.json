@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "LinkedIn Email Scraper",
+  "name": "Email Finder",
   "version": "1.0",
-  "description": "Automatically scrape emails from LinkedIn job posts.",
+  "description": "Find email addresses on web pages.",
   "permissions": ["storage", "scripting", "tabs", "notifications"],
-  "host_permissions": ["https://www.linkedin.com/jobs/*"],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
   },
@@ -15,10 +15,9 @@
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
-  },
-  "content_scripts": [
+  },  "content_scripts": [
     {
-      "matches": ["https://www.linkedin.com/jobs/*"],
+      "matches": ["<all_urls>"],
       "js": ["content.js"]
     }
   ]

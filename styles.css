@@ -8,9 +8,8 @@ body {
 
 h1 {
   font-size: 20px;
-  margin-bottom: 15px;
-  color: #0a66c2;
-  border-bottom: 2px solid #0a66c2;
+  margin-bottom: 15px;  color: #2c5282;
+  border-bottom: 2px solid #2c5282;
   padding-bottom: 10px;
 }
 
@@ -36,6 +35,9 @@ li {
   border-radius: 4px;
   font-size: 14px;
   color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 li:hover {
@@ -51,8 +53,7 @@ li:hover {
 
 button {
   padding: 8px 16px;
-  cursor: pointer;
-  background-color: #0a66c2;
+  cursor: pointer;  background-color: #2c5282;
   color: white;
   border: none;
   border-radius: 4px;
@@ -61,7 +62,7 @@ button {
 }
 
 button:hover {
-  background-color: #084482;
+  background-color: #1a365d;
 }
 
 button:disabled {
@@ -78,4 +79,56 @@ button:disabled:hover {
   color: #666;
   font-size: 14px;
   margin-bottom: 10px;
+}
+
+.domain {
+  font-size: 12px;
+  color: #666;
+  background-color: #e2e8f0;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-left: auto;
+}
+
+.delete-btn {
+  padding: 2px 8px;
+  font-size: 16px;
+  line-height: 1;
+  background-color: transparent;
+  color: #666;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.delete-btn:hover {
+  color: #dc3545;
+  background-color: transparent;
+}
+
+.sort-controls {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-controls select {
+  padding: 6px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 14px;
+  color: #4a5568;
+  cursor: pointer;
+}
+
+.sort-controls select:hover {
+  border-color: #2c5282;
+}
+
+.sort-controls select:focus {
+  outline: none;
+  border-color: #2c5282;
+  box-shadow: 0 0 0 2px rgba(44, 82, 130, 0.2);
 }

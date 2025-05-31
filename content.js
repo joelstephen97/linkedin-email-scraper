@@ -3,7 +3,7 @@ const foundEmails = new Set();
 
 // Initialize foundEmails with existing emails from storage
 chrome.storage.local.get({ emails: [] }, (data) => {
-  data.emails.forEach(email => foundEmails.add(email));
+  data.emails.forEach(item => foundEmails.add(item.email));
 });
 
 function extractEmails(text) {
@@ -12,28 +12,29 @@ function extractEmails(text) {
 }
 
 function scrapeEmails() {
-  // Try multiple possible selectors for job descriptions
-  const possibleSelectors = [
-    '.description__text',
-    '.job-details',
-    '.jobs-description',
-    '.jobs-description-content',
-    '[data-job-description]'
-  ];
-
-  // Find the first matching job description element
-  const jobDescription = possibleSelectors
-    .map(selector => document.querySelector(selector))
-    .find(element => element !== null);
-
-  if (jobDescription) {
-    const emails = extractEmails(jobDescription.innerText);
+  // Get all text content from the page, including hidden elements
+  const pageText = document.body.innerText + Array.from(document.getElementsByTagName('*'))
+    .map(el => el.getAttribute('href') || '')
+    .join(' ');
+    
+  if (pageText) {
+    const emails = extractEmails(pageText);
     const newEmails = emails.filter(email => !foundEmails.has(email));
     
+    // Process all new emails in batch
     newEmails.forEach(email => {
       foundEmails.add(email);
-      chrome.runtime.sendMessage({ type: "NEW_EMAIL", email });
+      chrome.runtime.sendMessage({ 
+        type: "NEW_EMAIL", 
+        email,
+        domain: window.location.hostname
+      });
     });
+
+    // Log found emails for debugging
+    if (newEmails.length > 0) {
+      console.log(`Found ${newEmails.length} new email(s):`, newEmails);
+    }
   }
 }
 
