@@ -1,27 +1,81 @@
 body {
-  font-family: Arial, sans-serif;
-  width: 300px;
-  padding: 10px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  width: 400px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  margin: 0;
 }
 
 h1 {
-  font-size: 18px;
-  margin-bottom: 10px;
+  font-size: 20px;
+  margin-bottom: 15px;
+  color: #0a66c2;
+  border-bottom: 2px solid #0a66c2;
+  padding-bottom: 10px;
+}
+
+.container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 15px;
 }
 
 ul {
   list-style-type: none;
   padding: 0;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 li {
-  margin-bottom: 8px;
+  padding: 10px;
+  margin-bottom: 5px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #333;
+}
+
+li:hover {
+  background-color: #e9ecef;
+}
+
+.actions {
+  margin-top: 15px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 button {
-  padding: 4px 8px;
+  padding: 8px 16px;
   cursor: pointer;
+  background-color: #0a66c2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #084482;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+button:disabled:hover {
+  background-color: #ccc;
+}
+
+.email-count {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
 }
